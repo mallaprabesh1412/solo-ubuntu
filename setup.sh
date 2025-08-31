@@ -1,81 +1,107 @@
-#!/data/data/com.termux/files/usr/bin/bash
-clear
+#!/bin/bash
 
-# BIG SOLO ASCII banner
-echo " "
-echo "  ███████╗ ██████╗ ██╗     ██╗      ██████╗ "
-echo "  ██╔════╝██╔═══██╗██║     ██║     ██╔═══██╗"
-echo "  █████╗  ██║   ██║██║     ██║     ██║   ██║"
-echo "  ██╔══╝  ██║   ██║██║     ██║     ██║   ██║"
-echo "  ██║     ╚██████╔╝███████╗███████╗╚██████╔╝"
-echo "  ╚═╝      ╚═════╝ ╚══════╝╚══════╝ ╚═════╝"
-echo " "
-echo "           🚀 SOLO Ubuntu Installer 🚀"
-echo " "
+# Colors
+R="$(printf '\033[1;31m')"
+G="$(printf '\033[1;32m')"
+Y="$(printf '\033[1;33m')"
+C="$(printf '\033[1;36m')"
+W="$(printf '\033[1;37m')"
 
-sleep 2
+CURR_DIR=$(realpath "$(dirname "$BASH_SOURCE")")
+UBUNTU_DIR="$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu"
 
-# Update Termux & install dependencies
-echo "[SOLO] Updating Termux packages..."
-yes | pkg update -y && pkg upgrade -y
-pkg install proot-distro wget git pulseaudio nano curl -y
+banner() {
+	clear
+	cat <<- EOF
+		${Y}   ███████╗ ██████╗ ██╗      ██████╗ 
+		${C}   ██╔════╝██╔═══██╗██║     ██╔═══██╗
+		${G}   █████╗  ██║   ██║██║     ██║   ██║
+		${R}   ██╔══╝  ██║   ██║██║     ██║   ██║
+		${Y}   ██║     ╚██████╔╝███████╗╚██████╔╝
+		${C}   ╚═╝      ╚═════╝ ╚══════╝ ╚═════╝ 
+	EOF
+	echo -e "${G}       SOLO Ubuntu — GUI + Dev Tools for Termux\n\n${W}"
+}
 
-# Install Ubuntu (22.04 LTS)
-echo "[SOLO] Installing Ubuntu 22.04..."
-proot-distro install ubuntu-22.04
+package() {
+	banner
+	echo -e "${R}[${W}-${R}]${C} Updating and installing base packages...${W}"
+	yes | pkg upgrade
+	packs=(git wget curl pulseaudio proot-distro)
+	for x in "${packs[@]}"; do
+		type -p "$x" &>/dev/null || yes | pkg install "$x" -y
+	done
+	termux-setup-storage
+}
 
-# Setup inside Ubuntu
-echo "[SOLO] Setting up Ubuntu environment..."
-proot-distro login ubuntu-22.04 -- bash -c "
-apt update && apt upgrade -y &&
-apt install sudo lxde-core lxterminal tigervnc-standalone-server tigervnc-common firefox-esr wget curl -y && \
-echo '[SOLO] Creating your user account...' && \
-read -p 'Enter your Ubuntu username (lowercase, no spaces): ' user && \
-adduser --disabled-password --gecos '' \$user && \
-echo '\$user ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-passwd \$user && \
-echo '[SOLO] Now set your VNC password:' && \
-su - \$user -c 'mkdir -p ~/.vnc && vncpasswd' && \
-su - \$user -c 'vncserver :1 -geometry 1280x720 -depth 24' && \
-wget https://github.com/VSCodium/vscodium/releases/download/1.88.2.23196/codium_1.88.2.23196-1_arm64.deb && \
-apt install ./codium_1.88.2.23196-1_arm64.deb -y && rm codium_1.88.2.23196-1_arm64.deb &&
-echo '[SOLO] ✅ Setup done inside Ubuntu!'"
+distro() {
+	echo -e "\n${R}[${W}-${R}]${C} Checking Ubuntu Distro...${W}"
+	if [[ -d "$UBUNTU_DIR" ]]; then
+		echo -e "${G}Ubuntu already installed.${W}"
+	else
+		proot-distro install ubuntu
+	fi
+}
 
-# Create solo-start shortcut
-echo "[SOLO] Creating shortcut command 'solo-start'..."
-cat > $PREFIX/bin/solo-start <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-echo "[SOLO] Starting Ubuntu and VNC..."
-proot-distro login ubuntu-22.04 -- bash -c "
-su - \$(ls /home) -c 'vncserver :1 -geometry 1280x720 -depth 24' &&
-echo '[SOLO] VNC running at 127.0.0.1:5901' &&
-bash"
-EOF
-chmod +x $PREFIX/bin/solo-start
+sound() {
+	echo -e "\n${R}[${W}-${R}]${C} Configuring Pulseaudio...${W}"
+	[ ! -e "$HOME/.sound" ] && touch "$HOME/.sound"
+	{
+		echo "pulseaudio --start --exit-idle-time=-1"
+		echo "pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1"
+	} >> "$HOME/.sound"
+}
 
-# Create solo-stop shortcut
-echo "[SOLO] Creating shortcut command 'solo-stop'..."
-cat > $PREFIX/bin/solo-stop <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-echo "[SOLO] Stopping VNC server..."
-proot-distro login ubuntu-22.04 -- bash -c "su - \$(ls /home) -c 'vncserver -kill :1'"
-echo "[SOLO] Ubuntu + VNC stopped."
-EOF
-chmod +x $PREFIX/bin/solo-stop
+setup_vnc() {
+	downloader "$CURR_DIR/vncstart" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/vncstart"
+	mv -f "$CURR_DIR/vncstart" "$UBUNTU_DIR/usr/local/bin/vncstart"
+	chmod +x "$UBUNTU_DIR/usr/local/bin/vncstart"
 
-# Final SOLO banner
-clear
-echo " "
-echo " ███████╗ ██████╗ ██╗     ██╗      ██████╗ "
-echo " ██╔════╝██╔═══██╗██║     ██║     ██╔═══██╗"
-echo " █████╗  ██║   ██║██║     ██║     ██║   ██║"
-echo " ██╔══╝  ██║   ██║██║     ██║     ██║   ██║"
-echo " ██║     ╚██████╔╝███████╗███████╗╚██████╔╝"
-echo " ╚═╝      ╚═════╝ ╚══════╝╚══════╝ ╚═════╝"
-echo " "
-echo "[SOLO] 🎉 Ubuntu with LXDE, Firefox, and VSCodium is installed!"
-echo "[SOLO] Run 'solo-start' in Termux to start Ubuntu + VNC."
-echo "[SOLO] Run 'solo-stop' to stop the VNC server."
-echo "[SOLO] Open VNC Viewer → connect to 127.0.0.1:5901"
-echo " "
-￼Enter
+	downloader "$CURR_DIR/vncstop" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/vncstop"
+	mv -f "$CURR_DIR/vncstop" "$UBUNTU_DIR/usr/local/bin/vncstop"
+	chmod +x "$UBUNTU_DIR/usr/local/bin/vncstop"
+}
+
+downloader() {
+	path="$1"
+	[ -e "$path" ] && rm -rf "$path"
+	echo "Downloading $(basename $1)..."
+	curl --progress-bar --insecure --fail \
+		 --retry-connrefused --retry 3 --retry-delay 2 \
+		 --location --output ${path} "$2"
+}
+
+permission() {
+	banner
+	echo -e "${R}[${W}-${R}]${C} Setting up environment...${W}"
+
+	# Copy user setup script
+	downloader "$CURR_DIR/user.sh" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/user.sh"
+	mv -f "$CURR_DIR/user.sh" "$UBUNTU_DIR/root/user.sh"
+	chmod +x $UBUNTU_DIR/root/user.sh
+
+	setup_vnc
+
+	# Make shortcut
+	echo "proot-distro login ubuntu" > $PREFIX/bin/solo
+	chmod +x "$PREFIX/bin/solo"
+
+	termux-reload-settings
+
+	banner
+	cat <<- EOF
+		${G}✅ SOLO Ubuntu CLI installed successfully!
+		${Y}Restart Termux before continuing.${W}
+
+		${C}Usage:${W}
+		${G}- Type ${C}solo${G} to run Ubuntu CLI
+		- Inside Ubuntu, run ${C}bash user.sh${G} to configure username + GUI
+		- Then use ${C}vncstart${G} / ${C}vncstop${G} to control GUI
+		- Connect via VNC Viewer → 127.0.0.1:5901
+	EOF
+}
+
+package
+distro
+sound
+permission
