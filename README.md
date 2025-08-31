@@ -4,128 +4,116 @@
 
 ---
 
-# SOLO Ubuntu
-
-**Run Ubuntu GUI on Termux with extra features, optimized for beginners and power users.**
 
 ---
 
-### 🚀 Features
+# 🖥️ SOLO Ubuntu for Termux
 
-* Fixed **Audio Output** (no more silent Ubuntu)
-* Lightweight (requires at least **4GB storage**)
-* Preinstalled with **2 Browsers** (Chromium & Firefox)
-* Supports **Bangla Fonts**
-* **VLC** & **MPV** Media Players
+Run **Ubuntu with GUI** directly on your Android device using Termux — powered by **SOLO**.
+Everything is automated: install once, choose your username + VNC password, and you’re ready to roll.
+
+---
+
+## 🚀 Features
+
+* Lightweight & stable (requires at least **4GB storage**)
+* XFCE4 Desktop Environment (fast, smooth)
+* **Firefox & Chromium** browsers
 * **Visual Studio Code** (buggy on ARM)
-* **Sublime Text** (for arm64/aarch64 only)
-* Beginner-friendly setup
-* Cool pre-applied themes 🎨
+* **Sublime Text** (arm64 only)
+* **VLC & MPV Media Players**
+* **GIMP (Photoshop alternative)**
+* Audio support (via PulseAudio)
+* Custom user creation (no root needed)
+* Single command installation (no restarts needed)
 
 ---
 
-### ⚙️ Installation
+## 📲 Installation
 
-1. **Install Termux**
-   Download the latest Termux APK from 👉 [HERE](https://f-droid.org/repo/com.termux_118.apk)
+### 1. Install Termux
 
-2. **Clone the repository & run setup**
+Download Termux APK from: [F-Droid](https://f-droid.org/repo/com.termux_118.apk)
 
-   ```bash
-   yes | pkg up
-   pkg install git wget -y
-   git clone --depth=1 https://github.com/mallaprabesh1412/solo-ubuntu.git
-   cd solo-ubuntu
-   bash setup.sh
-   ```
+### 2. Clone & Run Setup
 
-3. **Restart Termux** & type:
+```bash
+yes | pkg up
+pkg install git wget -y
+git clone https://github.com/mallaprabesh1412/solo-ubuntu.git
+cd solo-ubuntu
+bash setup.sh
+```
 
-   ```bash
-   ubuntu
-   bash user.sh
-   ```
-
-   * Enter your Ubuntu **root username** (must be lowercase, no spaces).
-
-4. **Restart Termux again** & type:
-
-   ```bash
-   ubuntu
-   sudo bash gui.sh
-   ```
-
-👉 **Remember your VNC password!**
+👉 During setup, enter your **Ubuntu username** (lowercase, no spaces) and set a **VNC password**.
 
 ---
 
-### 🖥️ Running Ubuntu GUI
+## 🔑 Usage
 
-* Start VNC server:
+After installation:
+
+* Enter Ubuntu CLI:
+
+  ```bash
+  solo
+  ```
+
+* Start Ubuntu GUI (VNC):
 
   ```bash
   vncstart
   ```
 
-* Stop VNC server:
+* Stop VNC:
 
   ```bash
   vncstop
   ```
 
-* Install **VNC Viewer** from 👉 [Google Play Store](https://play.google.com/store/apps/details?id=com.realvnc.viewer.android&hl=en)
+---
 
-* Open **VNC Viewer** → tap **+** →
+## 🖥️ VNC Viewer Setup
 
-  * Address: `localhost:1`
-  * Name: anything you like
+1. Install [VNC Viewer](https://play.google.com/store/apps/details?id=com.realvnc.viewer.android) from Play Store.
+2. Open app → Press `+` → Enter:
 
-* Set **Picture Quality → High** for best experience.
-
-* Connect, enter your password, and boom — Ubuntu desktop on your phone 🎉
+   * **Address**: `localhost:1`
+   * **Name**: `SOLO Ubuntu` (or anything you like)
+3. Set **Quality = High**.
+4. Connect → Enter your VNC password.
+5. Enjoy full Ubuntu Desktop on Android 🎉
 
 ---
 
-### 📌 Notes
+## ❌ Removal
 
-* `ubuntu` → Run Ubuntu CLI
-* `vncstart` → Start VNC server
-* `vncstop` → Stop VNC server
-* `bash purge.sh` → Completely remove SOLO Ubuntu
+If you want to remove SOLO Ubuntu:
 
----
-
-### 📹 Video Tutorial
-
-🎥 [Watch Here](https://mega.nz/embed/QvIC1TLQ#3z27MRNPwANAg6JTtx1Ei8kDouOZsZgk00bg4TsJMNQ!1m)
+```bash
+bash purge.sh
+```
 
 ---
 
-### 📖 Changelog
+## 🎥 Video Tutorial
 
-👉 [View Updates](https://github.com/mallaprabesh1412/solo-ubuntu/blob/master/CHANGELOG.md)
-
----
-
-### 📜 License
-
-Licensed under [Apache License](https://github.com/mallaprabesh1412/solo-ubuntu/blob/master/LICENSE)
+*(Coming soon — YouTube link planned)*
 
 ---
 
-### 🙌 Credits
+## 📜 Notes
 
-* Ubuntu image provided by **Termux proot-distro** → [GitHub](https://github.com/termux/proot-distro)
-* Full credit for Ubuntu base image goes to them.
+* Use `solo` for CLI Ubuntu
+* Use `vncstart` / `vncstop` for GUI session
+* Requires **VNC Viewer** app to access GUI
 
 ---
 
-### 👨‍💻 Maintainers
+## 👑 Maintainer
 
-* [**Mallaprabesh**](https://github.com/mallaprabesh1412)
+Created & Powered by **SOLO**
+
+---
 
 
-
-⭐ If you like SOLO Ubuntu, don’t forget to **star the repo**!
-
---
