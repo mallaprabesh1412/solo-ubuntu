@@ -1,76 +1,131 @@
 
 
-## 📜 `solo-ubuntu`
-
-````markdown
-# 🖤 SOLO UBUNTU INSTALLER 🖤
-
-The ultimate one-command Ubuntu with GUI, Firefox, VSCodium, and VNC — fully branded SOLO.  
-Works even on low-end Android (11+).
+## 📜 `solo-ubuntu'
 
 ---
 
-## ⚡ Install
+# SOLO Ubuntu
 
-In Termux:
-
-```bash
-pkg install git -y
-git clone https://github.com/YOURNAME/solo-ubuntu.git
-cd solo-ubuntu
-bash setup.sh
-````
+**Run Ubuntu GUI on Termux with extra features, optimized for beginners and power users.**
 
 ---
 
-## 🚀 Usage
+### 🚀 Features
 
-Start Ubuntu + VNC:
-
-```bash
-solo-start
-```
-
-Stop Ubuntu + VNC:
-
-```bash
-solo-stop
-```
+* Fixed **Audio Output** (no more silent Ubuntu)
+* Lightweight (requires at least **4GB storage**)
+* Preinstalled with **2 Browsers** (Chromium & Firefox)
+* Supports **Bangla Fonts**
+* **VLC** & **MPV** Media Players
+* **Visual Studio Code** (buggy on ARM)
+* **Sublime Text** (for arm64/aarch64 only)
+* Beginner-friendly setup
+* Cool pre-applied themes 🎨
 
 ---
 
-## 🔑 VNC Info
+### ⚙️ Installation
 
-* Address: `127.0.0.1:5901`
-* Password: (you set it during install)
-* Desktop: **LXDE**
+1. **Install Termux**
+   Download the latest Termux APK from 👉 [HERE](https://f-droid.org/repo/com.termux_118.apk)
+
+2. **Clone the repository & run setup**
+
+   ```bash
+   yes | pkg up
+   pkg install git wget -y
+   git clone --depth=1 https://github.com/mallaprabesh1412/solo-ubuntu.git
+   cd solo-ubuntu
+   bash setup.sh
+   ```
+
+3. **Restart Termux** & type:
+
+   ```bash
+   ubuntu
+   bash user.sh
+   ```
+
+   * Enter your Ubuntu **root username** (must be lowercase, no spaces).
+
+4. **Restart Termux again** & type:
+
+   ```bash
+   ubuntu
+   sudo bash gui.sh
+   ```
+
+👉 **Remember your VNC password!**
 
 ---
 
-## 🎉 Features
+### 🖥️ Running Ubuntu GUI
 
-* Ubuntu 22.04 LTS
-* LXDE Desktop (lightweight, smooth)
-* Firefox ESR
-* VSCodium (VS Code alternative)
-* TigerVNC for GUI access
-* SOLO branding everywhere 🖤
+* Start VNC server:
 
-````
+  ```bash
+  vncstart
+  ```
+
+* Stop VNC server:
+
+  ```bash
+  vncstop
+  ```
+
+* Install **VNC Viewer** from 👉 [Google Play Store](https://play.google.com/store/apps/details?id=com.realvnc.viewer.android&hl=en)
+
+* Open **VNC Viewer** → tap **+** →
+
+  * Address: `localhost:1`
+  * Name: anything you like
+
+* Set **Picture Quality → High** for best experience.
+
+* Connect, enter your password, and boom — Ubuntu desktop on your phone 🎉
 
 ---
 
-⚡ So bro → you just need to **create a repo on GitHub**, upload these two files (`setup.sh` + `README.md`).  
-After that, users only run:  
+### 📌 Notes
 
-```bash
-git clone https://github.com/YOURNAME/solo-ubuntu.git
-cd solo-ubuntu
-bash setup.sh
-````
-
-👉 and they get **SOLO Ubuntu**, with their **own username + password + VNC password**, running on **localhost:1**.
+* `ubuntu` → Run Ubuntu CLI
+* `vncstart` → Start VNC server
+* `vncstop` → Stop VNC server
+* `bash purge.sh` → Completely remove SOLO Ubuntu
 
 ---
 
-Do you want me to also include a **lightweight Android Studio installer** in this script, or keep it smooth for low-end devices (just Ubuntu + LXDE + Firefox + VS Code)?
+### 📹 Video Tutorial
+
+🎥 [Watch Here](https://mega.nz/embed/QvIC1TLQ#3z27MRNPwANAg6JTtx1Ei8kDouOZsZgk00bg4TsJMNQ!1m)
+
+---
+
+### 📖 Changelog
+
+👉 [View Updates](https://github.com/mallaprabesh1412/solo-ubuntu/blob/master/CHANGELOG.md)
+
+---
+
+### 📜 License
+
+Licensed under [Apache License](https://github.com/mallaprabesh1412/solo-ubuntu/blob/master/LICENSE)
+
+---
+
+### 🙌 Credits
+
+* Ubuntu image provided by **Termux proot-distro** → [GitHub](https://github.com/termux/proot-distro)
+* Full credit for Ubuntu base image goes to them.
+
+---
+
+### 👨‍💻 Maintainers
+
+* [**Mallaprabesh**](https://github.com/mallaprabesh1412)
+
+
+
+⭐ If you like SOLO Ubuntu, don’t forget to **star the repo**!
+
+--
