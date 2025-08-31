@@ -11,97 +11,110 @@ CURR_DIR=$(realpath "$(dirname "$BASH_SOURCE")")
 UBUNTU_DIR="$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu"
 
 banner() {
-	clear
-	cat <<- EOF
-		${Y}   ███████╗ ██████╗ ██╗      ██████╗ 
-		${C}   ██╔════╝██╔═══██╗██║     ██╔═══██╗
-		${G}   █████╗  ██║   ██║██║     ██║   ██║
-		${R}   ██╔══╝  ██║   ██║██║     ██║   ██║
-		${Y}   ██║     ╚██████╔╝███████╗╚██████╔╝
-		${C}   ╚═╝      ╚═════╝ ╚══════╝ ╚═════╝ 
-	EOF
-	echo -e "${G}       SOLO Ubuntu — GUI + Dev Tools for Termux\n\n${W}"
+    clear
+    cat <<- EOF
+${Y}   ███████╗ ██████╗ ██╗      ██████╗ 
+${C}   ██╔════╝██╔═══██╗██║     ██╔═══██╗
+${G}   █████╗  ██║   ██║██║     ██║   ██║
+${R}   ██╔══╝  ██║   ██║██║     ██║   ██║
+${Y}   ██║     ╚██████╔╝███████╗╚██████╔╝
+${C}   ╚═╝      ╚═════╝ ╚══════╝ ╚═════╝ 
+${W}              POWERED BY SOLO
+
+EOF
+    echo -e "${G}>> SOLO Ubuntu GUI Installer for Termux\n"
 }
 
-package() {
-	banner
-	echo -e "${R}[${W}-${R}]${C} Updating and installing base packages...${W}"
-	yes | pkg upgrade
-	packs=(git wget curl pulseaudio proot-distro)
-	for x in "${packs[@]}"; do
-		type -p "$x" &>/dev/null || yes | pkg install "$x" -y
-	done
-	termux-setup-storage
+# Install base Termux packages
+install_termux_packages() {
+    banner
+    echo -e "${C}[+] Updating Termux packages...${W}"
+    yes | pkg up
+    yes | pkg install git wget curl proot-distro pulseaudio x11-repo -y
 }
 
-distro() {
-	echo -e "\n${R}[${W}-${R}]${C} Checking Ubuntu Distro...${W}"
-	if [[ -d "$UBUNTU_DIR" ]]; then
-		echo -e "${G}Ubuntu already installed.${W}"
-	else
-		proot-distro install ubuntu
-	fi
+# Install Ubuntu
+install_ubuntu() {
+    echo -e "${C}[+] Installing Ubuntu...${W}"
+    if [[ -d "$UBUNTU_DIR" ]]; then
+        echo -e "${G}[✓] Ubuntu already installed.${W}"
+    else
+        proot-distro install ubuntu
+    fi
 }
 
-sound() {
-	echo -e "\n${R}[${W}-${R}]${C} Configuring Pulseaudio...${W}"
-	[ ! -e "$HOME/.sound" ] && touch "$HOME/.sound"
-	{
-		echo "pulseaudio --start --exit-idle-time=-1"
-		echo "pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1"
-	} >> "$HOME/.sound"
+# Configure SOLO command
+setup_solo_command() {
+    echo "proot-distro login ubuntu" > $PREFIX/bin/solo
+    chmod +x $PREFIX/bin/solo
+    termux-reload-settings
+    echo -e "${G}[✓] SOLO command installed. Type 'solo' to enter Ubuntu.${W}"
 }
 
-setup_vnc() {
-	downloader "$CURR_DIR/vncstart" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/vncstart"
-	mv -f "$CURR_DIR/vncstart" "$UBUNTU_DIR/usr/local/bin/vncstart"
-	chmod +x "$UBUNTU_DIR/usr/local/bin/vncstart"
-
-	downloader "$CURR_DIR/vncstop" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/vncstop"
-	mv -f "$CURR_DIR/vncstop" "$UBUNTU_DIR/usr/local/bin/vncstop"
-	chmod +x "$UBUNTU_DIR/usr/local/bin/vncstop"
+# Configure sound
+fix_sound() {
+    [ ! -e "$HOME/.sound" ] && touch "$HOME/.sound"
+    grep -qxF "pulseaudio --start --exit-idle-time=-1" ~/.sound || echo "pulseaudio --start --exit-idle-time=-1" >> ~/.sound
+    grep -qxF "pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" ~/.sound || echo "pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" >> ~/.sound
 }
 
-downloader() {
-	path="$1"
-	[ -e "$path" ] && rm -rf "$path"
-	echo "Downloading $(basename $1)..."
-	curl --progress-bar --insecure --fail \
-		 --retry-connrefused --retry 3 --retry-delay 2 \
-		 --location --output ${path} "$2"
+# Setup user + VNC inside Ubuntu
+setup_inside_ubuntu() {
+    proot-distro login ubuntu -- bash -c "
+apt update && apt upgrade -y
+apt install xfce4 xfce4-goodies tightvncserver dbus-x11 -y
+apt install firefox chromium-browser vlc mpv gimp code -y
+apt install sudo curl wget git nano neofetch -y
+
+echo 'Setting up your Ubuntu user...'
+read -p 'Enter a username: ' USERNAME
+useradd -m -s /bin/bash \$USERNAME
+passwd \$USERNAME
+usermod -aG sudo \$USERNAME
+
+echo 'Setting up your VNC password...'
+runuser -l \$USERNAME -c 'vncpasswd'
+
+echo '#!/bin/bash
+xrdb \$HOME/.Xresources
+startxfce4 &' > /home/\$USERNAME/.vnc/xstartup
+chmod +x /home/\$USERNAME/.vnc/xstartup
+
+echo -e '\n${G}[✓] Ubuntu with GUI installed. Use vncstart/vncstop.${W}'
+"
 }
 
-permission() {
-	banner
-	echo -e "${R}[${W}-${R}]${C} Setting up environment...${W}"
+# Install vncstart/vncstop scripts
+setup_vnc_scripts() {
+    cat > $PREFIX/bin/vncstart <<- EOM
+#!/bin/bash
+pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1
+proot-distro login ubuntu -- runuser -l \$(ls $UBUNTU_DIR/home | head -n1) -c 'vncserver :1 -geometry 1280x720 -depth 24'
+echo 'Now open VNC Viewer and connect to localhost:1'
+EOM
 
-	# Copy user setup script
-	downloader "$CURR_DIR/user.sh" "https://raw.githubusercontent.com/mallaprabesh1412/solo-ubuntu/master/distro/user.sh"
-	mv -f "$CURR_DIR/user.sh" "$UBUNTU_DIR/root/user.sh"
-	chmod +x $UBUNTU_DIR/root/user.sh
+    cat > $PREFIX/bin/vncstop <<- EOM
+#!/bin/bash
+proot-distro login ubuntu -- runuser -l \$(ls $UBUNTU_DIR/home | head -n1) -c 'vncserver -kill :1'
+EOM
 
-	setup_vnc
-
-	# Make shortcut
-	echo "proot-distro login ubuntu" > $PREFIX/bin/solo
-	chmod +x "$PREFIX/bin/solo"
-
-	termux-reload-settings
-
-	banner
-	cat <<- EOF
-		${G}✅ SOLO Ubuntu CLI installed successfully!
-		${Y}Restart Termux before continuing.${W}
-
-		${C}Usage:${W}
-		${G}- Type ${C}solo${G} to run Ubuntu CLI
-		- Inside Ubuntu, run ${C}bash user.sh${G} to configure username + GUI
-		- Then use ${C}vncstart${G} / ${C}vncstop${G} to control GUI
-		- Connect via VNC Viewer → 127.0.0.1:5901
-	EOF
+    chmod +x $PREFIX/bin/vncstart
+    chmod +x $PREFIX/bin/vncstop
 }
 
-package
-distro
-sound
-permission
+# Run everything
+banner
+install_termux_packages
+install_ubuntu
+fix_sound
+setup_solo_command
+setup_inside_ubuntu
+setup_vnc_scripts
+
+echo -e "\n${Y}=================================================${W}"
+echo -e "${G}SOLO Ubuntu GUI Installed Successfully!"
+echo -e "Commands to use:"
+echo -e "  -> ${C}solo${W}        : Enter Ubuntu CLI"
+echo -e "  -> ${C}vncstart${W}    : Start Ubuntu GUI (localhost:1)"
+echo -e "  -> ${C}vncstop${W}     : Stop VNC server"
+echo -e "=================================================${W}"
