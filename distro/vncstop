@@ -1,0 +1,6 @@
+#!/bin/bash
+# Stop VNC server for Solo Ubuntu
+
+export USER=solo
+su - $USER -c "vncserver -kill :1"
+echo "[+] VNC stopped."
