@@ -1,0 +1,7 @@
+#!/bin/bash
+# Start VNC server for Solo Ubuntu
+
+export USER=solo
+su - $USER -c "vncserver :1 -geometry 1280x720 -depth 24"
+echo "[+] VNC started on display :1"
+echo "👉 Connect with VNC Viewer to: localhost:5901"
